@@ -4,6 +4,7 @@ import random
 import string
 import urllib
 import base64
+import warnings
 
 try:
     import hashlib
@@ -78,9 +79,12 @@ STATES = {
 
 class ProfileForm(Form):
     """User Profile Form"""
-    display_name = TextField(
-        'Display Name', [validators.DataRequired(), ],
+    name = TextField(
+        'Name', [validators.DataRequired(), ],
         description="Your display name"
+    )
+    display_name = fields.Function(fields.Text("Name"),
+        getter="get_display_name", setter="set_display_name",
     )
     timezone = SelectField(
         'Timezone',
@@ -91,6 +95,31 @@ class ProfileForm(Form):
         'Email', [validators.DataRequired(), validators.Email()],
         description="Your Login Email. This Cannot be edited."
     )
+
+    @classmethod
+    def get_display_name(cls, records, name):
+        "Returns the display name"
+        warnings.warn(
+            "Nereid display_name field is deprecated, "
+            "use name instead",
+            DeprecationWarning, stacklevel=2
+        )
+        res = {}
+        for record in records:
+            res[record.id] = record.in_app_unread
+        return res
+
+    @classmethod
+    def set_display_name(cls, records, name, value):
+        "Sets name field for instance"
+        warnings.warn(
+            "Nereid display_name field is deprecated, "
+            "use name instead",
+            DeprecationWarning, stacklevel=2
+        )
+        cls.write(records, {
+            'name': value
+        })
 
 
 class ResetAccountForm(Form):
